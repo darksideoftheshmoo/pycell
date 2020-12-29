@@ -59,32 +59,43 @@ def get_chanel(df_mapping, flag):
     path = df_mapping[df_mapping['flag'] == flag]['fluor'].values[0]
     return chanel.findall(path)[0].split('_')[0]
 
-def get_serie_chanels(df, df_map):
-    '''Para el DataFrame df renombra la columna 'flag', reemplaza int()
-    correspondientes por str(chanel) codificados en el Dataframe df_map
-    retorna el df modificado'''
-    print('Agragando serie chanles ...')
+def get_col_chan(df, df_map):
+    '''
+    Devuelve un DataFrame con entradas únicas de ucid, t_frame. 
+    Elimina los valores redundandes de cellID y la serie 'flag'.
+    Para el mapeo de fluorecencia df_map (tabla cellID) crea columnas
+    valor_fluor (f_tot_YFP).
+    df = Tabla cellID por posición
+    df_map = Tabla mapping cellID por posición
+    '''
+    #Menjase
+    print('Agragando columnas chanles ...')
+    
+    #Variables de fluorecencia
+    fluor  = [name for name in df.columns if name.startswith('f_')]
+    #Creo un df con columnas variable_fluor por ucid t_frame
+    #idx = ['ucid', 't_frame'] if 't_frame' in df else idx = ['ucid']
+    df_flag = df.pivot(index = ['ucid', 't_frame'] ,columns = 'flag', values= fluor)
+    
+    #Renombro columnas 
     #Obtengo todos los flag:chanel en mapping
     chanels = {flag:get_chanel(df_map, flag) for flag in df_map['flag'].unique()}
-    #Cambio el valor de flag por str() chanel
-    df.flag = df.flag.replace(chanels)
-    #Renombre la columna flag por chanel
-    df.rename(columns = {'flag':'chanel'})
-    return df
+    #Col_name
+    df_flag.columns = [n[0] + '_' + chanels[n[1]] for n in df_flag.columns]
     
+    #Lista de variables morfologicas
+    morf = [name for name in df.columns if not name.startswith('f_')]
+    
+    #Creo un df con las variables morfologicas
+     #Elimino las redundancias creadas por cellID, registo un solo flag. 
+    df_morf = df[df.flag == 0 ][morf]
+    df_morf.set_index(['ucid', 't_frame'], inplace=True)
+    #Junto los df_flag y df_morf
+    df = pd.merge(df_morf, df_flag, on=['ucid', 't_frame'], how='outer')
+    del df['flag']
+    return df
 
-#def apply_chanel(df, df_map):
-#    '''
-#    Crea la serie df['chanel']= str(chanel)
-#    pre: Recibe un DataFrame df con la serie df['flag'] = int() y
-#         DataFrame df_map con las series df_map['flag'], df_map['fluor']
-#    pos: df es modificado, se grega la serie['chanel'] codificada en mapping.
-#    '''
-#    #Mensaje para el pipeline
-#    print('Agragando serie chanles ...')
-#    #Itero por fila de df y grago str(chanel)
-#    df['chanel'] = df.apply(lambda x: get_chanel(df_map, x['flag']), axis=1)
-#    return df
+# def get_serie_chanels(df, df_map): funcion eliminada, crea elemento por linea
 
 def make_df(path_file):
     '''
@@ -142,8 +153,7 @@ def compact_df(path):
         #Proseso las tablas de a una
         df_i = make_df(f)
         #Creo el DataFrame para mapear canales
-#        df_i =  apply_chanel(df_i, get_dataframe(get_mapp_files(path).__next__()))
-        df_i =  get_serie_chanels(df_i, get_dataframe(get_mapp_files(path).__next__()))
+        df_i =  get_col_chan(df_i, get_dataframe(get_mapp_files(path).__next__()))
         df = pd.concat([df, df_i], ignore_index=True)
     return df
 
@@ -190,21 +200,10 @@ if __name__ == '__main__':
 #%% Pruebo funciones
 
 #Experimento 16 posiciones 365792 filas 60 columnas
-path_c2 ='/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/Andy/Micro/2019-10-21_Swi6_k_YPP5932_time_course'
-df2 = compact_df(path_c2)
+#path_c2 ='/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/Andy/Micro/2019-10-21_Swi6_k_YPP5932_time_course'
+#df2 = compact_df(path_c2)
 #save_df(compact_df(path_c2))
 
 #arpeta de prueba 3 posiciones 72756 filas y 60 columnas
-path_c = '/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/proyecto_python/carpeta'
-df = compact_df(path_c)
-
-#Cargo las tablas con la función get_dataframe
-
-df_tabla = get_dataframe('Position01/out_all')
-df_mapp = get_dataframe('Position01/out_bf_fl_mapping')
-
-
-df2 = compact_df(path_c)
-
-
-
+#path_c = '/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/proyecto_python/carpeta'
+#df = compact_df(path_c)
