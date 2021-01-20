@@ -11,10 +11,10 @@ Created on Sun Nov 15 12:03:09 2020
 #El programa recorrerá las subcarpetas.
 #Toma de las tabalas de salida cellID (out_all, out_bf_fl_mapping) por position.
 #Creará una subcarpeta pydata/df (opcional).
-#El único DataFrame con los valores de cada tabla agrega las series:
+#Salida: único DataFrame con los valores de cada tabla. Agregará las series:
   #df['ucid'] identificador de célula por posición. int(). Unic Cell ID = ucid
   #df['pos'] identificador de posición de adquisición. int()
-  #Para los valores de fluoresencia mapeados en out_bf_fl_mapping(df_mapp)
+  #Para los valores de fluorescencia mapeados en out_bf_fl_mapping(df_mapp)
    #se crearran tantas series como flags en df_mapp multiplicado por la cantidad
    #de variables morfológicas df['f_tot_x1fp','f_tot_x2fp',..., 'f_tot_xnfp']
     
@@ -23,13 +23,13 @@ import pandas as pd
 import re
 #from io import StringIO
 
-#%% #Prosesamiento de tablas
+#%% #Procesamiento de tablas
 
 def get_dataframe(file):
     '''
     Devuelve un Dataframe.
     file = ruta al texto plano (formato tabla).
-    Eliminadas las delimitaciones por espacio de headers.
+    Elimina las delimitaciones por espacio de headers.
     '''
     df = pd.read_table(file)
     #Elimino los espacios en los nombres de las columnas ' x.pos '. 
@@ -40,7 +40,7 @@ def get_dataframe(file):
 
 def get_ucid(df, pos):
     '''
-    Crea una columna en el dataframe (df) con número de trajing
+    Crea una columna en el dataframe (df) con número de tracking
     df[ucid].loc[0] = 100000000000 para cellID = 0 Position = 1
     ucid = int(numberPosition + cellID)
     df = df creado por cellID contiene la serie df['cellID']
@@ -66,7 +66,7 @@ def get_chanel(df_mapping, flag):
 def get_col_chan(df, df_map):
     '''
     Modifica la entrada df proviniente del pipeline pyCell. 
-    Separa las series (columnas) morfológicas por canal de fluoresencia
+    Separa las series (columnas) morfológicas por canal de fluorecsencia
     pre: df = Tabla cellID contiendo df['ucid']
          df_map = Tabla mapping cellID (out_bf_fl_mapping)
     pos: Crea serias morfologicas por canal df['f_tot_yfp',...,'f_nuc_bfp',...] 
@@ -75,7 +75,7 @@ def get_col_chan(df, df_map):
     #Mensaje
     print('Agragando columnas chanles ...')
     
-    #Variables de fluoresencia
+    #Variables de fluorescencia
     fluor  = [f_var for f_var in df.columns if f_var.startswith('f_')]
     #Creo un df con columnas variable_fluor por ucid y t_frame
     #idx = ['ucid', 't_frame'] if 't_frame' in df else idx = ['ucid']
@@ -109,7 +109,7 @@ def get_col_chan(df, df_map):
 
 def make_df(path_file):
     '''
-    Crea un dataframe con numero de traking ucid y position
+    Crea un dataframe con numero de tracking ucid y position
     pre: path_file = nombre del archivo de salida cellID out_all
     pos: Devuelve un df del archivo pasado conteniendo df['ucid']
     '''
@@ -166,7 +166,7 @@ def compact_df(path):
     df = pd.DataFrame()
     #Itero sobre la lista de archivos out.
     for f in get_outall_files(path):
-        #Proseso las tablas de a una
+        #Proceso las tablas de a una
         df_i = make_df(f)
         #Creo el DataFrame para mapear canales
         df_i =  get_col_chan(df_i, get_dataframe(get_mapp_files(path).__next__()))
@@ -227,16 +227,16 @@ if __name__ == '__main__':
 
 #Carpeta de prueba 
 # 12 t_frames, 3 posiciones (72756 filas y 60 columnas)
-path_c = '/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/proyecto_python/carpeta'
-df = compact_df(path_c)
+#path_c = '/home/jose/Documentos/Mio/Trabajo/CONICET/IFIBYNE/Grupos_de_Investigacion/ACL/proyecto_python/carpeta'
+#df = compact_df(path_c)
 
 
-df_tabla = get_dataframe(path_c + '/Position01/out_all')
-df_tabla = get_ucid(df_tabla, 1)
+#df_tabla = get_dataframe(path_c + '/Position01/out_all')
+#df_tabla = get_ucid(df_tabla, 1)
 
-df_mapping = get_dataframe(path_c + '/Position01/out_bf_fl_mapping')
+#df_mapping = get_dataframe(path_c + '/Position01/out_bf_fl_mapping')
 
-ch = get_chanel(df_mapping, 1)
+#ch = get_chanel(df_mapping, 1)
 
-d = make_df(path_c + '/Position01/out_all')
+#d = make_df(path_c + '/Position01/out_all')
 
