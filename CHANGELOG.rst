@@ -298,4 +298,7 @@ la función ``get_col_chan(df, df_map)`` está bien pero hace demasiadas cosas a
     origin  https://github.com/darksideoftheshmoo/pycell.git (fetch)
     origin  https://github.com/darksideoftheshmoo/pycell.git (push)
     
-    (venv) $>
+    (venv) $> git checkout -b juniors90
+
+    git branch -M main
+    

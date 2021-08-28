@@ -21,4 +21,4 @@ __version__ = "0.0.1"
 
 from .images import *  # noqa
 
-from .loab_data import *  # noqa
+from .load_data import *  # noqa

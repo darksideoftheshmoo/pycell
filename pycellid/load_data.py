@@ -36,8 +36,9 @@ import os
 import pandas as pd
 import re
 
+#%%
 # Tables Proccesing
-def create_dataframe(file):
+def create_df(file):
     """Delete the delimitations by space of headers.
 
     :param file: path to the plain text given by *out_all* file (table formater).
@@ -50,7 +51,7 @@ def create_dataframe(file):
     df.columns = df.columns.str.replace('.', '_')
     return df
 #%%
-create_dataframe('../muestras_cellid/Position01/out_all')
+create_df('../muestras_cellid/Position01/out_all')
 
 #%%
 def create_ucid_column(df, pos):
@@ -63,8 +64,9 @@ def create_ucid_column(df, pos):
     """
     df['ucid'] = [pos * 100000000000 + cellID for cellID in df['cellID']]
     return df
- 
-def get_chanel(df_mapping, flag):
+
+#%% 
+def get_channel(df_mapping, flag):
     """
     :param df_mapping: recibe un DataFrame de mapeo, ``df_mapping``,
                        con series ``['flag']=int()`` y
@@ -88,18 +90,16 @@ def get_col_chan(df, df_map):
     :param df_map: Tabla mapping ``cellID`` (``out_bf_fl_mapping``).
     :return: Crea serias morfologicas por canal ``df['f_tot_yfp',...,'f_nuc_bfp',...]``.
     """
-    #Mensaje
-    print('Agragando columnas chanles ...')
-    
     #Variables de fluorescencia
     fluor  = [f_var for f_var in df.columns if f_var.startswith('f_')]
+    idx = ['ucid', 't_frame']
     #Creo un df con columnas variable_fluor por ucid y t_frame
     #idx = ['ucid', 't_frame'] if 't_frame' in df else idx = ['ucid']
-    df_flag = df.pivot(index = ['ucid', 't_frame'] ,columns = 'flag', values= fluor)
+    df_flag = df.pivot(index = idx,columns = 'flag', values= fluor)
     
     #Renombro columnas 
     #Obtengo todos los flag:chanel en mapping
-    chanels = {flag:get_chanel(df_map, flag) for flag in df_map['flag'].unique()}
+    chanels = {flag:get_channel(df_map, flag) for flag in df_map['flag'].unique()}
     #Col_name
     df_flag.columns = [n[0] + '_' + chanels[n[1]] for n in df_flag.columns]
     
@@ -109,15 +109,16 @@ def get_col_chan(df, df_map):
     #Creo un df con las variables morfologicas
     #Elimino las redundancias creadas por cellID, registo un solo flag. 
     df_morf = df[df.flag == 0 ][morf]
-    df_morf.set_index(['ucid', 't_frame'], inplace=True)
+    df_morf.set_index(idx, inplace=True)
     #Junto los df_flag y df_morf
-    df = pd.merge(df_morf, df_flag, on=['ucid', 't_frame'], how='outer')
+    df = pd.merge(df_morf, df_flag, on = idx, how='outer')
     del df['flag']
     #Por congruencia con RCell
     #Indices numéricos. ucid, t_frama pasan a columnas
     df = df.reset_index()
     #Ordeno columnas compatible con marco de datos RCell
     col = ['pos', 't_frame', 'ucid', 'cellID']
+    # * col = ['pos'] + idx + ['cellID'] -- Preguntar si sirve!!!
     df = pd.concat([df[col],df.drop(col,axis=1)], axis=1)
     return df
 
@@ -134,15 +135,15 @@ def make_df(path_file):
     pos = int(re.findall("\d+", path_file)[0])
     print('leyendo position: ', pos)
     #Leo la tabla de texto plano.
-    df = create_dataframe(path_file)
+    df = create_df(path_file)
     #Asigno ucid
     df = create_ucid_column(df, pos)
     df['pos'] = [pos for _ in range(len(df))]
     return df
 
-#%% #Navego direcctorios para obtener tablas
 
-def get_outall_files(path):
+#%% #Navego direcctorios para obtener tablas
+def get_outall_or_mapp_file(path):
     """Change the working directory.
 
     :param path: carpeta que contiene las salidas cellID.
@@ -157,17 +158,6 @@ def get_outall_files(path):
                 p = os.path. join (r, name)
                 print(p)
                 yield p
-
-def get_mapp_files(path):
-    """
-    :param path: Carpeta que contiene las salidas ``cellID``.
-                 Change the working directory.
-    :return: una lista generadora con ``path`` de acceso a tablas 'out' de ``cellID``.
-    """
-    #Rutas a los archivos out_all, out_bf_fl_mapping de cellID
-    for r, d, f in os. walk ( "." ):
-        d.sort()
-        for name in f:
             if 'mapping' in name:
                 yield os.path.join(r, name)
                 
@@ -188,7 +178,7 @@ def read_cellidtable(path): #cambio load_df
         df_i = make_df(f)
         #Creo el DataFrame para mapear canales
         df_i = create_morphological_series_by_channel(df_i,\
-            create_dataframe(get_mapp_files(path).__next__()))
+            create_df(get_outall_or_mapp_file(path).__next__())) #esto se llamaba get_mapp_files
         df = pd.concat([df, df_i], ignore_index=True)
     return df
 

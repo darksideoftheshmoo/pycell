@@ -87,6 +87,8 @@ target/
 # IPython
 profile_default/
 ipython_config.py
+pycellid/load_data.ipynb
+
 
 # pyenv
 .python-version
@@ -106,6 +108,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+
+
 
 # Spyder project settings
 .spyderproject

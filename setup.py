@@ -65,7 +65,7 @@ setup(
     packages=["pycellid"],
     license="The MIT License",
     install_requires=REQUIREMENTS,
-    keywords=["pycell", "key2", "key3"],
+    keywords=["pycellid", "computational microscopy", "biological science"],
     classifiers=[
         "Development Status :: 1 - Beta",
         "Intended Audience :: Education",
