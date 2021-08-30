@@ -147,6 +147,29 @@ git branch -M main
 git remote add origin https://github.com/pyCellID/pyCellID.git
 git push -u origin main
 
+
+
+
+.. code-block:: python
+
+    # Tables Proccesing
+    def create_df(file):
+        """Delete the delimitations by space of headers.
+        
+        :param file: path to the plain text given by *out_all* file (table formater).
+        :return: A dataframe.
+        """
+        try:
+            df = pd.read_table(file)
+            # Elimino los espacios en los nombres de las columnas ' x.pos '.
+            df.columns = df.columns.str.strip()
+            # Cambio (. por _) las separaciones x.pos por x_pos
+            df.columns = df.columns.str.replace('.', '_')
+            return df
+        except FileNotFoundError:
+            return f'No such file or directory: {file}'
+
+
 .. code-block:: python
 
     def get_ucid(df, pos):
@@ -163,15 +186,14 @@ git push -u origin main
 .. code-block:: python
 
     def create_ucid_column(df, position):
-    """Crea una columna en el dataframe ``(df)`` con número de tracking
-    ``df[ucid].loc[0] = 100000000000`` para ``cellID = 0``, ``Position = 1``.
-
-    :param ucid: ``int(numberPosition + cellID)``.
-
-    :param df: dataframe creado por ``cellID`` contiene la serie ``df['cellID']``.
-    """
-    df['ucid'] = [position * 100000000000 + cellID for cellID in df['cellID']]
-    return df
+        """Crea una columna en el dataframe ``(df)`` con número de tracking
+        ``df[ucid].loc[0] = 100000000000`` para ``cellID = 0``, ``Position = 1``.
+        
+        :param ucid: ``int(numberPosition + cellID)``.
+        :param df: dataframe creado por ``cellID`` contiene la serie ``df['cellID']``.
+        """
+        df['ucid'] = [position * 100000000000 + cellID for cellID in df['cellID']]
+        return df
 
 
 .. code-block:: python

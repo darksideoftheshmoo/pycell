@@ -7,7 +7,7 @@
 # @author: Juan David Ferreira
 
 
-#Modulo de importación de tablas PyCell
+# Modulo de importación de tablas PyCell
 # =============================================================================
 # META
 # =============================================================================

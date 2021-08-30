@@ -44,26 +44,37 @@ def create_df(file):
     :param file: path to the plain text given by *out_all* file (table formater).
     :return: A dataframe.
     """
-    df = pd.read_table(file)
-    #Elimino los espacios en los nombres de las columnas ' x.pos '. 
-    df.columns = df.columns.str.strip()
-    #Cambio (. por _) las separaciones x.pos por x_pos
-    df.columns = df.columns.str.replace('.', '_')
-    return df
-#%%
-create_df('../muestras_cellid/Position01/out_all')
+    try:
+        df = pd.read_table(file)
+        #Elimino los espacios en los nombres de las columnas ' x.pos '.
+        df.columns = df.columns.str.strip()
+        #Cambio (. por _) las separaciones x.pos por x_pos
+        df.columns = df.columns.str.replace('.', '_')
+        return df
+    except FileNotFoundError:
+        return f'No such file or directory: {file}'
 
 #%%
-def create_ucid_column(df, pos):
+def create_ucid_column(df_table, position):
     """Crea una columna en el dataframe ``(df)`` con número de tracking
     ``df[ucid].loc[0] = 100000000000`` para ``cellID = 0``, ``Position = 1``.
 
     :param ucid: ``int(numberPosition + cellID)``.
 
-    :param df: dataframe creado por ``cellID`` contiene la serie ``df['cellID']``.
+    :param df_table: dataframe creado por ``cellID`` contiene la serie ``df['cellID']``.
     """
-    df['ucid'] = [pos * 100000000000 + cellID for cellID in df['cellID']]
-    return df
+    #? Preguntar cómo podemos gestionar los errores en este caso.
+    #? Por ejemplo si el df no existe o si el rango no es válido.
+    #? falta validar que el número ingresado sea un entero.
+    try:
+        if pos > 0:
+            df_table['ucid'] = [position * 100000000000 +\
+                                cellID for cellID in df_table['cellID']]
+            return df
+        else:
+            return f'ingrese una posición válida'
+    except:
+        f'Input a valid ucid or datafame.'
 
 #%% 
 def get_channel(df_mapping, flag):
@@ -76,18 +87,18 @@ def get_channel(df_mapping, flag):
     #La escritura del cellID tiene la siguiente expresión regular
     #De 2 a tres caractes xFP luego  _Position
     chanel = re.compile(r'\w{2,3}_Position')
-    #cellID codifica en la columna 'fluor'(ruta_archivo contiene str('chanel'))
-     #Filtro el DataFrame  para la coincidencia falg == fluor
+    # cellID codifica en la columna 'fluor'(ruta_archivo contiene str('chanel'))
+    # Filtro el DataFrame  para la coincidencia falg == fluor
     path = df_mapping[df_mapping['flag'] == flag]['fluor'].values[0]
     return chanel.findall(path)[0].split('_')[0].lower()
 
-def get_col_chan(df, df_map):
+def create_morphological_series_by_channel(df, df_mapping):
     """Modifica la entrada df proviniente del pipeline ``pyCell``. 
     Separa las series (columnas) morfológicas por canal de fluorecsencia.
     Elimina los valores redundandes de ``cellID`` y la serie ``'flag'``.
 
     :param df: Tabla ``cellID`` contiendo ``df['ucid']``.
-    :param df_map: Tabla mapping ``cellID`` (``out_bf_fl_mapping``).
+    :param df_mapping: Tabla mapping ``cellID`` (``out_bf_fl_mapping``).
     :return: Crea serias morfologicas por canal ``df['f_tot_yfp',...,'f_nuc_bfp',...]``.
     """
     #Variables de fluorescencia
@@ -99,7 +110,7 @@ def get_col_chan(df, df_map):
     
     #Renombro columnas 
     #Obtengo todos los flag:chanel en mapping
-    chanels = {flag:get_channel(df_map, flag) for flag in df_map['flag'].unique()}
+    chanels = {flag:get_channel(df_mapping, flag) for flag in df_mapping['flag'].unique()}
     #Col_name
     df_flag.columns = [n[0] + '_' + chanels[n[1]] for n in df_flag.columns]
     
