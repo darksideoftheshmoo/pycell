@@ -9,10 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-
-#%%
-
-def get_img_name(ucid, t_frame, chanel):
+def create_img_name(ucid, t_frame, channel):
     """This function have a initial ucid ``ucid_in = 100000000000``
     such that try a positional string given by ``pos = str(ucid //ucid_in).zfill(2)``.
     For example: ``ucid = int(300000000020)`` numero de traking unico.
@@ -23,12 +20,14 @@ def get_img_name(ucid, t_frame, chanel):
     :param chanel: Can be one value given by BF, CFP, RFP or YFP.
     :return: A string given by the image's name.
     """
-    #ucid inicial
+    # Initial ucid
     ucid_in = 100000000000 
-    #Obtengo str() de position 01, 02, 10, 20, 100
-    pos = str(ucid //ucid_in).zfill(2)
-    
-    return f'{chanel.upper()}_Position{pos}_time{str(t_frame+1).zfill(2)}.tif.out.tif'
+    # Obtain the string position given by 01, 02, 10, 20, 100
+    pos = str(ucid // ucid_in).zfill(2)
+    time = str(t_frame + 1).zfill(2)
+    CHANNEL = channel.upper()
+    img_name = f'{CHANNEL}_Position{pos}_time{time}.tif.out.tif'
+    return img_name
     
 def box_img(path, im_name, x_pos, y_pos, dx=(15, 15), dy=(15, 15)):
     """The function ``box_img`` return a array of the intensity values
@@ -73,13 +72,13 @@ def box_img(path, im_name, x_pos, y_pos, dx=(15, 15), dy=(15, 15)):
     # Frame
     alto = np.zeros((im.shape[0], 3))
     largo = np.zeros((3, (im.shape[1] + 3)))
-    # Recuadro
+    # BOX
     im = np.concatenate([im, alto], 1)
     im = np.concatenate([im, largo], 0)
     
     return im
 
-def array_img(data, path, chanel='BF', n=25, shape=(5,5),\
+def array_img(data, path, channel='BF', n_cells=25, shape=(5,5),\
               cent_cel=[(20, 20),(20, 20)]):
     """Realiza ``n`` selecciones del dataset ``data``, recorre ``path``
     buscando las imagenes correspondientes a ``chanel`` y crea una
@@ -99,10 +98,10 @@ def array_img(data, path, chanel='BF', n=25, shape=(5,5),\
     #select = np.random.choice(data['ucid'], 91 ,replace = False)
         
     #seleccion de n filas al azar y sin repo
-    select = data[['ucid','t_frame','xpos', 'ypos']].sample(n)
+    select = data[['ucid','t_frame','xpos', 'ypos']].sample(n_cells)
     #Registra el nombre de cada imagen en la serie 'name'
     select['name'] = select.apply(
-        lambda row : get_img_name(row['ucid'], row['t_frame'], chanel),\
+        lambda row : create_img_name(row['ucid'], row['t_frame'], channel),\
         axis=1
         )
     

@@ -16,7 +16,7 @@ Los siguientes cambios son compatibles con versión inicial del repositorio, son
 - Para la versión final del proyecto solo se hará un resumen de éstas.
 
 0.0.1
--------
+------
 
 ``__init__.py``
 ~~~~~~~~~~~~~~~~
@@ -139,13 +139,15 @@ documentation root, use os.path.abspath to make it absolute, like shown here.
 27 de agosto
 ---------------------
 
-echo "# pyCellID" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/pyCellID/pyCellID.git
-git push -u origin main
+.. code-block:: none
+    
+    echo "# pyCellID" >> README.md
+    git init
+    git add README.md
+    git commit -m "first commit"
+    git branch -M main
+    git remote add origin https://github.com/pyCellID/pyCellID.git
+    git push -u origin main
 
 
 
