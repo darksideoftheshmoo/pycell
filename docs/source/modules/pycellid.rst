@@ -12,10 +12,10 @@ pycellid.images module
    :undoc-members:
    :show-inheritance:
 
-pycellid.load\_data module
---------------------------
+pycellid.pycellid\_io module
+----------------------------
 
-.. automodule:: pycellid.load_data
+.. automodule:: pycellid.pycellid_io
    :members:
    :undoc-members:
    :show-inheritance:
